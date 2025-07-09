@@ -1,0 +1,16 @@
+{
+  "name": "mario-platformer-engine",
+  "version": "1.0.0",
+  "description": "A 2D platformer game engine inspired by Super Mario Bros.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080",
+    "dev": "npx http-server -p 8080 -o"
+  },
+  "keywords": ["game", "platformer", "mario", "2d", "engine"],
+  "author": "Game Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

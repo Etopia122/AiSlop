@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Platformer - Level Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2c3e50;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .toolbar {
+            width: 250px;
+            background-color: #34495e;
+            padding: 10px;
+            overflow-y: auto;
+            border-right: 2px solid #1a252f;
+        }
+
+        .toolbar h2 {
+            color: #ecf0f1;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .tool-section {
+            margin-bottom: 20px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tool-item {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #7f8c8d;
+            background-color: #ecf0f1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .tool-item:hover {
+            border-color: #3498db;
+            transform: scale(1.05);
+        }
+
+        .tool-item.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .tool-item.eraser {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            color: #ecf0f1;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .control-group input, .control-group select, .control-group button {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #7f8c8d;
+            background-color: #ecf0f1;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .control-group button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            margin-bottom: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .control-group button:hover {
+            background-color: #2980b9;
+        }
+
+        .control-group button.danger {
+            background-color: #e74c3c;
+        }
+
+        .control-group button.danger:hover {
+            background-color: #c0392b;
+        }
+
+        .control-group button.success {
+            background-color: #27ae60;
+        }
+
+        .control-group button.success:hover {
+            background-color: #229954;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #editorCanvas {
+            background-color: #5C94FC;
+            cursor: crosshair;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .grid-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .level-info {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .level-info input {
+            margin: 2px;
+            padding: 4px;
+            border: 1px solid #7f8c8d;
+            background-color: #ecf0f1;
+            font-size: 11px;
+        }
+
+        .help-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            max-width: 200px;
+        }
+
+        .minimap {
+            width: 100%;
+            height: 80px;
+            border: 1px solid #7f8c8d;
+            background-color: #ecf0f1;
+            margin-top: 10px;
+        }
+
+        .layer-controls {
+            margin-bottom: 15px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 3px;
+            background-color: #2c3e50;
+            border-radius: 3px;
+        }
+
+        .layer-item input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .layer-item label {
+            color: #ecf0f1;
+            font-size: 11px;
+            flex: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #34495e;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            color: #ecf0f1;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            height: 300px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border: 1px solid #7f8c8d;
+            padding: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <div class="level-info">
+                <label>Level Name:</label>
+                <input type="text" id="levelName" value="My Level" placeholder="Level Name">
+                <label>Author:</label>
+                <input type="text" id="levelAuthor" value="Player" placeholder="Author Name">
+                <label>Size:</label>
+                <select id="levelWidth">
+                    <option value="50">Small (50 tiles)</option>
+                    <option value="100" selected>Medium (100 tiles)</option>
+                    <option value="150">Large (150 tiles)</option>
+                    <option value="200">Huge (200 tiles)</option>
+                </select>
+            </div>
+
+            <div class="tool-section">
+                <h2>🏗️ Tiles</h2>
+                <div class="tool-grid" id="tilesGrid">
+                    <!-- Tiles will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>👾 Enemies</h2>
+                <div class="tool-grid" id="enemiesGrid">
+                    <!-- Enemies will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>🍄 Power-ups</h2>
+                <div class="tool-grid" id="powerupsGrid">
+                    <!-- Power-ups will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>📦 Blocks</h2>
+                <div class="tool-grid" id="blocksGrid">
+                    <!-- Blocks will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>🔧 Tools</h2>
+                <div class="tool-grid" id="toolsGrid">
+                    <!-- Tools will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>🎛️ Controls</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <button onclick="clearLevel()">🗑️ Clear Level</button>
+                        <button onclick="testLevel()" class="success">▶️ Test Level</button>
+                        <button onclick="showExportModal()">📤 Export Level</button>
+                        <button onclick="showImportModal()">📥 Import Level</button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Grid Size:</label>
+                        <select id="gridSize" onchange="updateGridSize()">
+                            <option value="16">16px</option>
+                            <option value="32" selected>32px</option>
+                            <option value="64">64px</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Brush Size:</label>
+                        <select id="brushSize">
+                            <option value="1" selected>1x1</option>
+                            <option value="2">2x2</option>
+                            <option value="3">3x3</option>
+                            <option value="4">4x4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>📚 Saved Levels</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <button onclick="saveLevel()" class="success">💾 Save Level</button>
+                        <select id="savedLevels" onchange="loadSavedLevel()">
+                            <option value="">Select Level...</option>
+                        </select>
+                        <button onclick="deleteSavedLevel()" class="danger">🗑️ Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h2>🗺️ Minimap</h2>
+                <canvas class="minimap" id="minimapCanvas" width="230" height="80"></canvas>
+            </div>
+
+            <div class="tool-section">
+                <h2>📋 Layers</h2>
+                <div class="layer-controls">
+                    <div class="layer-item">
+                        <input type="checkbox" id="showTiles" checked onchange="updateLayerVisibility()">
+                        <label for="showTiles">Tiles</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="showEnemies" checked onchange="updateLayerVisibility()">
+                        <label for="showEnemies">Enemies</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="showPowerups" checked onchange="updateLayerVisibility()">
+                        <label for="showPowerups">Power-ups</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="showBlocks" checked onchange="updateLayerVisibility()">
+                        <label for="showBlocks">Blocks</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="showGrid" checked onchange="updateGridVisibility()">
+                        <label for="showGrid">Grid</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="editorCanvas" width="1200" height="600"></canvas>
+            
+            <div class="status-bar" id="statusBar">
+                Position: (0, 0) | Tool: None | Objects: 0
+            </div>
+
+            <div class="grid-toggle">
+                <label>
+                    <input type="checkbox" id="snapToGrid" checked> Snap to Grid
+                </label>
+            </div>
+
+            <div class="help-panel">
+                <strong>Controls:</strong><br>
+                🖱️ Click: Place/Remove<br>
+                ⇧ Shift + Drag: Multi-place<br>
+                🔍 Mouse Wheel: Zoom<br>
+                ➡️ Arrow Keys: Pan<br>
+                🔄 Ctrl+Z: Undo<br>
+                🔄 Ctrl+Y: Redo
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeExportModal()">&times;</span>
+            <h3>📤 Export Level Data</h3>
+            <p>Copy this JSON data to share your level:</p>
+            <textarea id="exportData" readonly></textarea>
+            <br><br>
+            <button onclick="copyToClipboard()" class="success">📋 Copy to Clipboard</button>
+            <button onclick="downloadLevel()" class="success">💾 Download File</button>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h3>📥 Import Level Data</h3>
+            <p>Paste level JSON data here:</p>
+            <textarea id="importData" placeholder="Paste level JSON here..."></textarea>
+            <br><br>
+            <button onclick="importLevel()" class="success">📥 Import Level</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="loadFile()">
+            <button onclick="document.getElementById('fileInput').click()">📁 Load from File</button>
+        </div>
+    </div>
+
+    <!-- Core Engine Scripts -->
+    <script src="src/core/Vector2.js"></script>
+    <script src="src/core/GameObject.js"></script>
+
+    <!-- Level Editor Script -->
+    <script src="level-editor.js"></script>
+</body>
+</html>
