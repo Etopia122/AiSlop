@@ -183,6 +183,12 @@ class LevelEditor {
         this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
+        // Touch events for mobile
+        this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+        this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: false });
+        this.canvas.addEventListener('touchcancel', (e) => this.onTouchEnd(e), { passive: false });
+        
         // Keyboard events
         document.addEventListener('keydown', (e) => this.onKeyDown(e));
         document.addEventListener('keyup', (e) => this.onKeyUp(e));
@@ -264,6 +270,124 @@ class LevelEditor {
         this.camera.y = worldY - (mouseY / this.zoom);
         
         this.render();
+    }
+    
+    // Touch event handlers
+    onTouchStart(e) {
+        e.preventDefault();
+        
+        if (e.touches.length === 1) {
+            // Single touch - treat as mouse down
+            const touch = e.touches[0];
+            this.updateTouchPosition(touch);
+            this.mouse.down = true;
+            this.isDragging = false;
+            this.isPlacing = true;
+            this.placeTool();
+        } else if (e.touches.length === 2) {
+            // Two finger touch - prepare for pinch zoom
+            this.handlePinchStart(e);
+        }
+    }
+    
+    onTouchMove(e) {
+        e.preventDefault();
+        
+        if (e.touches.length === 1) {
+            // Single touch - treat as mouse move
+            const touch = e.touches[0];
+            this.updateTouchPosition(touch);
+            
+            if (this.mouse.down) {
+                if (this.isPlacing) {
+                    this.placeTool();
+                }
+            }
+            
+            this.updateStatusBar();
+            this.render();
+        } else if (e.touches.length === 2) {
+            // Two finger touch - handle pinch zoom
+            this.handlePinchMove(e);
+        }
+    }
+    
+    onTouchEnd(e) {
+        e.preventDefault();
+        
+        if (e.touches.length === 0) {
+            // All touches ended
+            this.mouse.down = false;
+            this.isPlacing = false;
+            this.isDragging = false;
+        }
+    }
+    
+    updateTouchPosition(touch) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouse.x = touch.clientX - rect.left;
+        this.mouse.y = touch.clientY - rect.top;
+        
+        // Convert to world coordinates
+        this.mouse.worldX = (this.mouse.x / this.zoom) + this.camera.x;
+        this.mouse.worldY = (this.mouse.y / this.zoom) + this.camera.y;
+        
+        // Snap to grid
+        if (this.snapToGrid) {
+            this.mouse.gridX = Math.floor(this.mouse.worldX / this.gridSize) * this.gridSize;
+            this.mouse.gridY = Math.floor(this.mouse.worldY / this.gridSize) * this.gridSize;
+        } else {
+            this.mouse.gridX = this.mouse.worldX;
+            this.mouse.gridY = this.mouse.worldY;
+        }
+    }
+    
+    handlePinchStart(e) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        
+        this.lastPinchDistance = Math.sqrt(
+            Math.pow(touch2.clientX - touch1.clientX, 2) +
+            Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        
+        // Store center point for zoom
+        this.pinchCenterX = (touch1.clientX + touch2.clientX) / 2;
+        this.pinchCenterY = (touch1.clientY + touch2.clientY) / 2;
+    }
+    
+    handlePinchMove(e) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        
+        const currentDistance = Math.sqrt(
+            Math.pow(touch2.clientX - touch1.clientX, 2) +
+            Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        
+        if (this.lastPinchDistance) {
+            const zoomFactor = currentDistance / this.lastPinchDistance;
+            
+            // Get center point in world coordinates
+            const rect = this.canvas.getBoundingClientRect();
+            const centerX = this.pinchCenterX - rect.left;
+            const centerY = this.pinchCenterY - rect.top;
+            
+            const worldX = (centerX / this.zoom) + this.camera.x;
+            const worldY = (centerY / this.zoom) + this.camera.y;
+            
+            // Apply zoom
+            this.zoom *= zoomFactor;
+            this.zoom = Math.max(0.1, Math.min(5, this.zoom));
+            
+            // Adjust camera to zoom towards pinch center
+            this.camera.x = worldX - (centerX / this.zoom);
+            this.camera.y = worldY - (centerY / this.zoom);
+            
+            this.render();
+        }
+        
+        this.lastPinchDistance = currentDistance;
     }
     
     onKeyDown(e) {

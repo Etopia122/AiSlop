@@ -237,6 +237,40 @@ See `LEVEL_EDITOR_GUIDE.md` for complete documentation.
 
 The level editor is fully integrated with the game engine, supporting all game mechanics including Mario's power states, enemy behaviors, block interactions, and physics.
 
+## 📱 Mobile Controls
+
+The game now includes comprehensive mobile support with touch controls!
+
+### Mobile Game Features:
+- **Virtual D-Pad**: Smooth directional controls for movement
+- **Action Buttons**: Jump, Run, and Fireball buttons with visual feedback
+- **Adaptive UI**: Fireball button appears/disappears based on Mario's power state
+- **Responsive Design**: Optimized layout for phones and tablets
+- **Touch Gestures**: Natural touch interaction with visual button feedback
+
+### Mobile Level Editor Features:
+- **Touch Placement**: Tap to place objects, drag to paint multiple tiles
+- **Pinch to Zoom**: Two-finger pinch gesture for zooming in/out
+- **Responsive Layout**: Horizontal scrolling toolbar on mobile devices
+- **Touch-Optimized UI**: Larger buttons and touch-friendly interface
+- **Mobile Toolbar**: Collapsible sections for better screen space usage
+
+### Mobile Controls:
+- **D-Pad**: Left/Right movement and jumping
+- **Jump Button**: Variable height jumping (hold for higher jumps)
+- **Run Button**: Hold to run faster and jump further
+- **Fireball Button**: Shoot fireballs (only visible when Fire Mario)
+- **Pause Button**: Pause/resume game
+- **Debug Button**: Toggle debug mode
+
+### Responsive Features:
+- **Auto-detection**: Automatically enables touch controls on mobile devices
+- **Orientation Support**: Works in both portrait and landscape modes
+- **Performance Optimized**: Efficient touch handling with 60fps gameplay
+- **Accessibility**: Large touch targets and clear visual feedback
+
+The mobile controls provide the same responsive Mario gameplay experience as desktop, with intuitive touch interfaces designed specifically for mobile gaming.
+
 ## Future Enhancements
 
 - [ ] Sprite sheets and improved graphics
@@ -245,6 +279,7 @@ The level editor is fully integrated with the game engine, supporting all game m
 - [ ] Sound effects and background music
 - [ ] Mobile touch controls
 - [x] Level editor ✅
+- [x] Mobile touch controls ✅
 - [ ] Multiplayer support
 - [ ] Save/load game state
 - [ ] Achievement system

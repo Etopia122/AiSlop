@@ -2,9 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mario-Inspired Platformer Engine</title>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -14,30 +26,111 @@
             align-items: center;
             min-height: 100vh;
             font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
+
         canvas {
             border: 2px solid #000;
             background-color: #5C94FC;
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
         }
+
         #gameContainer {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
+
         #ui {
             color: white;
             font-size: 16px;
             margin-bottom: 10px;
             text-align: center;
+            z-index: 100;
+            position: relative;
         }
+
         #controls {
             color: white;
             font-size: 12px;
             margin-top: 10px;
             text-align: center;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 1024px) {
+            #controls {
+                display: none; /* Hide keyboard controls on mobile */
+            }
+            
+            canvas {
+                border: none;
+                width: 100vw;
+                height: 100vh;
+            }
+            
+            #ui {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 14px;
+                margin: 0;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+            
+            #gameContainer {
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #ui {
+                font-size: 12px;
+                top: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #ui {
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            #ui {
+                top: 5px;
+                font-size: 12px;
+            }
+        }
+
+        /* Portrait orientation adjustments */
+        @media (max-width: 768px) and (orientation: portrait) {
+            canvas {
+                height: calc(100vh - 60px); /* Account for mobile browser UI */
+            }
         }
     </style>
 </head>
@@ -49,7 +142,8 @@
         </div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="controls">
-            <p>Controls: Arrow Keys to Move, Space to Jump, R to Restart</p>
+            <p>Desktop: Arrow Keys to Move, Space to Jump, Z to Run, X for Fireball, R to Restart</p>
+            <p>Mobile: Use on-screen touch controls</p>
         </div>
     </div>
 
@@ -57,6 +151,7 @@
     <script src="src/core/Vector2.js"></script>
     <script src="src/core/GameObject.js"></script>
     <script src="src/core/Physics.js"></script>
+    <script src="src/core/TouchInput.js"></script>
     <script src="src/core/Input.js"></script>
     <script src="src/core/Audio.js"></script>
     <script src="src/core/GameEngine.js"></script>

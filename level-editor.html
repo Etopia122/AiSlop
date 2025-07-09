@@ -2,19 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mario Platformer - Level Editor</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
 
         body {
             background-color: #2c3e50;
             font-family: 'Courier New', monospace;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
 
         .editor-container {
@@ -272,6 +281,211 @@
 
         .close:hover {
             color: #fff;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 1024px) {
+            .editor-container {
+                flex-direction: column;
+            }
+            
+            .toolbar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 2px solid #1a252f;
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 5px;
+            }
+            
+            .tool-section {
+                min-width: 200px;
+                margin-bottom: 10px;
+                margin-right: 15px;
+            }
+            
+            .canvas-container {
+                flex: 1;
+                width: 100%;
+                height: 60vh;
+            }
+            
+            #editorCanvas {
+                width: 100%;
+                height: 100%;
+            }
+            
+            .tool-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 3px;
+            }
+            
+            .tool-item {
+                width: 40px;
+                height: 40px;
+                font-size: 10px;
+                min-width: 40px;
+                flex-shrink: 0;
+            }
+            
+            .controls {
+                margin-bottom: 10px;
+            }
+            
+            .control-group {
+                margin-bottom: 5px;
+            }
+            
+            .control-group label {
+                font-size: 10px;
+            }
+            
+            .control-group input, .control-group select, .control-group button {
+                font-size: 10px;
+                padding: 3px;
+            }
+            
+            .level-info input {
+                font-size: 9px;
+                padding: 2px;
+            }
+            
+            .status-bar {
+                font-size: 10px;
+                padding: 5px;
+                top: 5px;
+                right: 5px;
+            }
+            
+            .help-panel {
+                display: none; /* Hide help on mobile to save space */
+            }
+            
+            .minimap {
+                height: 60px;
+            }
+            
+            .layer-controls {
+                margin-bottom: 10px;
+            }
+            
+            .layer-item {
+                margin-bottom: 3px;
+                padding: 2px;
+            }
+            
+            .layer-item label {
+                font-size: 9px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                max-height: 35vh;
+                padding: 3px;
+            }
+            
+            .tool-section {
+                min-width: 180px;
+                margin-right: 10px;
+            }
+            
+            .tool-item {
+                width: 35px;
+                height: 35px;
+                font-size: 9px;
+            }
+            
+            .canvas-container {
+                height: 65vh;
+            }
+            
+            .status-bar {
+                font-size: 9px;
+                padding: 3px;
+            }
+            
+            .grid-toggle {
+                font-size: 9px;
+                padding: 3px 6px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 15px;
+            }
+            
+            .modal-content textarea {
+                height: 200px;
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .toolbar {
+                max-height: 30vh;
+                padding: 2px;
+            }
+            
+            .tool-section {
+                min-width: 160px;
+                margin-right: 8px;
+            }
+            
+            .tool-section h2 {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+            
+            .tool-item {
+                width: 30px;
+                height: 30px;
+                font-size: 8px;
+            }
+            
+            .canvas-container {
+                height: 70vh;
+            }
+            
+            .status-bar {
+                font-size: 8px;
+                padding: 2px;
+            }
+            
+            .grid-toggle {
+                font-size: 8px;
+                padding: 2px 4px;
+            }
+            
+            .modal-content {
+                width: 98%;
+                margin: 1% auto;
+                padding: 10px;
+            }
+            
+            .modal-content h3 {
+                font-size: 16px;
+            }
+            
+            .modal-content textarea {
+                height: 150px;
+                font-size: 9px;
+            }
+            
+            .level-info {
+                padding: 5px;
+            }
+        }
+
+        /* Prevent zoom on double tap */
+        .tool-item, .action-button, .control-group button {
+            touch-action: manipulation;
         }
     </style>
 </head>

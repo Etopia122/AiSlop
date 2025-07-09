@@ -370,6 +370,11 @@ class Player extends GameObject {
         if (oldPowerState !== this.powerState) {
             this.updateAppearance();
             this.makeInvincible(1.0);
+            
+            // Update mobile fireball button visibility
+            if (this.engine && this.engine.input) {
+                this.engine.input.setFireballButtonVisible(this.powerState === 'fire');
+            }
         }
     }
 
@@ -380,6 +385,11 @@ class Player extends GameObject {
             this.powerState = 'big';
             this.updateAppearance();
             this.makeInvincible(2.0);
+            
+            // Hide fireball button when losing fire power
+            if (this.engine && this.engine.input) {
+                this.engine.input.setFireballButtonVisible(false);
+            }
         } else if (this.powerState === 'big') {
             this.powerState = 'small';
             this.size.y = 32;
@@ -435,6 +445,11 @@ class Player extends GameObject {
         this.solid = true;
         this.addTag('player');
         this.updateAppearance();
+        
+        // Hide fireball button when respawning as small Mario
+        if (this.engine && this.engine.input) {
+            this.engine.input.setFireballButtonVisible(false);
+        }
         
         // Reset position to checkpoint or level start
         this.position.x = 100;
