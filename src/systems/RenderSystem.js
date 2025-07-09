@@ -1,10 +1,12 @@
 class RenderSystem {
-    constructor(ctx) {
+    constructor(ctx, spriteManager = null) {
         this.ctx = ctx;
         this.canvas = ctx.canvas;
+        this.spriteManager = spriteManager;
         this.effects = [];
         this.particles = [];
         this.debugMode = false;
+        this.spriteRenderingEnabled = true;
         
         // Background layers
         this.backgroundLayers = [];
@@ -147,8 +149,10 @@ class RenderSystem {
             this.ctx.globalAlpha = obj.alpha;
         }
         
-        // Render sprite or placeholder
-        if (obj.sprite && obj.currentAnimation) {
+        // Render sprite from sprite manager, animation, or placeholder
+        if (this.spriteManager && this.spriteRenderingEnabled && obj.spriteInfo) {
+            this.renderSpriteFromManager(obj, -obj.size.x / 2, -obj.size.y / 2);
+        } else if (obj.sprite && obj.currentAnimation) {
             this.renderSprite(obj, -obj.size.x / 2, -obj.size.y / 2);
         } else {
             this.renderPlaceholder(obj, -obj.size.x / 2, -obj.size.y / 2);
@@ -162,7 +166,33 @@ class RenderSystem {
         }
     }
 
-    // Render sprite with animation
+    // Render sprite from sprite manager
+    renderSpriteFromManager(obj, x, y) {
+        if (!this.spriteManager || !obj.spriteInfo) return;
+        
+        const { sheetName, spriteName } = obj.spriteInfo;
+        let currentSpriteName = spriteName;
+        
+        // Check if object has animation state
+        if (obj.currentAnimation && obj.spriteAnimations) {
+            const animFrames = obj.spriteAnimations[obj.currentAnimation];
+            if (animFrames && animFrames.length > 0) {
+                const frameIndex = Math.min(obj.frameIndex || 0, animFrames.length - 1);
+                currentSpriteName = animFrames[frameIndex];
+            }
+        }
+        
+        this.spriteManager.drawSprite(
+            this.ctx,
+            sheetName,
+            currentSpriteName,
+            x, y,
+            obj.size.x, obj.size.y,
+            false, false // Flip handled by transform above
+        );
+    }
+
+    // Render sprite with animation (legacy support)
     renderSprite(obj, x, y) {
         const animation = obj.animations[obj.currentAnimation];
         if (!animation) return;

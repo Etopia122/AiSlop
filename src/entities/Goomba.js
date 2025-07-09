@@ -8,6 +8,7 @@ class Goomba extends Enemy {
         this.squished = false;
         
         this.setupAnimations();
+        this.setupSprites();
         this.setupBehavior();
     }
 
@@ -22,6 +23,15 @@ class Goomba extends Enemy {
         ], 0.1, false);
         
         this.playAnimation('walk');
+    }
+
+    setupSprites() {
+        // Set sprite sheet info
+        this.setSpriteInfo('enemies', 'goomba_walk1');
+        
+        // Goomba animations
+        this.addSpriteAnimation('walk', ['goomba_walk1', 'goomba_walk2'], 0.5, true);
+        this.addSpriteAnimation('squished', ['goomba_squashed'], 0.1, false);
     }
 
     setupBehavior() {

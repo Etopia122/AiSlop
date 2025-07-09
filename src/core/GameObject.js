@@ -21,6 +21,10 @@ class GameObject {
         this.frameTime = 0;
         this.frameIndex = 0;
         
+        // Sprite manager properties
+        this.spriteInfo = null; // { sheetName: 'mario', spriteName: 'mario_small_idle' }
+        this.spriteAnimations = {}; // Animation frame arrays for sprite manager
+        
         // Collision properties
         this.collider = {
             x: 0,
@@ -63,22 +67,6 @@ class GameObject {
         
         // Apply physics
         this.updatePhysics(deltaTime);
-    }
-
-    updateAnimation(deltaTime) {
-        if (!this.currentAnimation || !this.animations[this.currentAnimation]) return;
-        
-        const animation = this.animations[this.currentAnimation];
-        this.frameTime += deltaTime;
-        
-        if (this.frameTime >= animation.frameRate) {
-            this.frameTime = 0;
-            this.frameIndex = (this.frameIndex + 1) % animation.frames.length;
-            
-            if (this.frameIndex === 0 && !animation.loop) {
-                this.currentAnimation = null;
-            }
-        }
     }
 
     updatePhysics(deltaTime) {
@@ -142,10 +130,57 @@ class GameObject {
     }
 
     playAnimation(name) {
-        if (this.animations[name]) {
+        if (this.animations[name] || this.spriteAnimations[name]) {
             this.currentAnimation = name;
             this.frameIndex = 0;
             this.frameTime = 0;
+        }
+    }
+
+    // Sprite manager methods
+    setSpriteInfo(sheetName, spriteName) {
+        this.spriteInfo = {
+            sheetName: sheetName,
+            spriteName: spriteName
+        };
+    }
+
+    addSpriteAnimation(name, frameNames, frameRate = 0.1, loop = true) {
+        this.spriteAnimations[name] = frameNames;
+        // Also add to regular animations for timing
+        this.animations[name] = {
+            frames: frameNames.map(() => ({ x: 0, y: 0, width: 16, height: 16 })), // Dummy frames
+            frameRate: frameRate,
+            loop: loop
+        };
+    }
+
+    updateAnimation(deltaTime) {
+        if (!this.currentAnimation) return;
+        
+        // Check both sprite animations and regular animations
+        const hasAnimation = this.animations[this.currentAnimation] || this.spriteAnimations[this.currentAnimation];
+        if (!hasAnimation) return;
+        
+        const animation = this.animations[this.currentAnimation];
+        this.frameTime += deltaTime;
+        
+        if (this.frameTime >= animation.frameRate) {
+            this.frameTime = 0;
+            
+            // Get frame count from appropriate source
+            let frameCount = 1;
+            if (this.spriteAnimations[this.currentAnimation]) {
+                frameCount = this.spriteAnimations[this.currentAnimation].length;
+            } else if (animation) {
+                frameCount = animation.frames.length;
+            }
+            
+            this.frameIndex = (this.frameIndex + 1) % frameCount;
+            
+            if (this.frameIndex === 0 && animation && !animation.loop) {
+                this.currentAnimation = null;
+            }
         }
     }
 

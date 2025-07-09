@@ -56,6 +56,7 @@ class Player extends GameObject {
         
         // Initialize animations
         this.setupAnimations();
+        this.setupSprites();
         this.updateAppearance();
     }
 
@@ -146,6 +147,39 @@ class Player extends GameObject {
             { x: 0, y: 32, width: 32, height: 64 },
             { x: 0, y: 0, width: 32, height: 32 }
         ], 0.1, false);
+    }
+
+    setupSprites() {
+        // Set sprite sheet info
+        this.setSpriteInfo('mario', 'mario_small_idle');
+        
+        // Small Mario animations
+        this.addSpriteAnimation('small_idle', ['mario_small_idle'], 0.1, true);
+        this.addSpriteAnimation('small_walk', ['mario_small_walk1', 'mario_small_walk2', 'mario_small_walk3'], 0.15, true);
+        this.addSpriteAnimation('small_jump', ['mario_small_jump'], 0.1, false);
+        this.addSpriteAnimation('small_crouch', ['mario_small_crouch'], 0.1, false);
+        
+        // Big Mario animations
+        this.addSpriteAnimation('big_idle', ['mario_big_idle'], 0.1, true);
+        this.addSpriteAnimation('big_walk', ['mario_big_walk1', 'mario_big_walk2', 'mario_big_walk3'], 0.15, true);
+        this.addSpriteAnimation('big_jump', ['mario_big_jump'], 0.1, false);
+        this.addSpriteAnimation('big_crouch', ['mario_big_crouch'], 0.1, false);
+        
+        // Fire Mario animations
+        this.addSpriteAnimation('fire_idle', ['mario_fire_idle'], 0.1, true);
+        this.addSpriteAnimation('fire_walk', ['mario_fire_walk1', 'mario_fire_walk2', 'mario_fire_walk3'], 0.15, true);
+        this.addSpriteAnimation('fire_jump', ['mario_fire_jump'], 0.1, false);
+        this.addSpriteAnimation('fire_crouch', ['mario_fire_crouch'], 0.1, false);
+        
+        // Ice Mario animations
+        this.addSpriteAnimation('ice_idle', ['mario_ice_idle'], 0.1, true);
+        this.addSpriteAnimation('ice_walk', ['mario_ice_walk1', 'mario_ice_walk2', 'mario_ice_walk3'], 0.15, true);
+        this.addSpriteAnimation('ice_jump', ['mario_ice_jump'], 0.1, false);
+        this.addSpriteAnimation('ice_crouch', ['mario_ice_crouch'], 0.1, false);
+        
+        // Transformation animations
+        this.addSpriteAnimation('transform_grow', ['mario_small_idle', 'mario_big_idle'], 0.1, false);
+        this.addSpriteAnimation('transform_shrink', ['mario_big_idle', 'mario_small_idle'], 0.1, false);
     }
 
     update(deltaTime) {

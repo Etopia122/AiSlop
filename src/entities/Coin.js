@@ -24,6 +24,7 @@ class Coin extends GameObject {
         this.sparkleInterval = 0.5;
         
         this.setupAnimations();
+        this.setupSprites();
     }
 
     setupAnimations() {
@@ -35,6 +36,14 @@ class Coin extends GameObject {
         ], 0.15, true);
         
         this.playAnimation('spin');
+    }
+
+    setupSprites() {
+        // Set sprite sheet info
+        this.setSpriteInfo('powerups', 'coin1');
+        
+        // Coin animation
+        this.addSpriteAnimation('spin', ['coin1', 'coin2', 'coin3', 'coin4'], 0.15, true);
     }
 
     update(deltaTime) {

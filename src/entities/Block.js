@@ -29,6 +29,7 @@ class Block extends GameObject {
         this.pieces = [];
         
         this.setupAnimations();
+        this.setupSprites();
         this.setupContent();
     }
 
@@ -61,6 +62,26 @@ class Block extends GameObject {
         }
         
         this.playAnimation('idle');
+    }
+
+    setupSprites() {
+        switch (this.type) {
+            case 'question':
+                this.setSpriteInfo('blocks', 'question_block1');
+                this.addSpriteAnimation('idle', ['question_block1', 'question_block2', 'question_block3'], 0.3, true);
+                this.addSpriteAnimation('empty', ['question_block_empty'], 0.1, false);
+                break;
+                
+            case 'brick':
+                this.setSpriteInfo('blocks', 'brick_block');
+                this.addSpriteAnimation('idle', ['brick_block'], 0.1, true);
+                break;
+                
+            case 'invisible':
+                this.setSpriteInfo('blocks', 'invisible_block');
+                this.addSpriteAnimation('idle', ['invisible_block'], 0.1, true);
+                break;
+        }
     }
 
     setupContent() {

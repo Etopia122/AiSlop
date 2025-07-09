@@ -9,11 +9,13 @@ class GameEngine {
         this.physics = new Physics();
         this.input = new Input();
         this.audio = new Audio();
+        this.spriteManager = new SpriteManager();
         
         // Game systems
         this.animationSystem = new AnimationSystem();
         this.collisionSystem = new CollisionSystem();
-        this.renderSystem = new RenderSystem(this.ctx);
+        this.backgroundSystem = new BackgroundSystem(this.canvas);
+        this.renderSystem = new RenderSystem(this.ctx, this.spriteManager);
         
         // Game state
         this.gameObjects = [];
@@ -52,11 +54,17 @@ class GameEngine {
         // Load audio
         await this.audio.loadAllSounds();
         
+        // Load sprites
+        await this.spriteManager.loadAllSprites();
+        
         // Setup canvas
         this.setupCanvas();
         
         // Initialize game states
         this.initGameStates();
+        
+        // Initialize background system
+        this.backgroundSystem.initializeDefaults();
         
         console.log('Game Engine initialized');
     }
@@ -152,6 +160,9 @@ class GameEngine {
         // Update all game objects
         this.gameObjects.forEach(obj => obj.update(this.deltaTime));
         
+        // Update background system
+        this.backgroundSystem.update(this.deltaTime, this.camera);
+        
         // Handle collisions
         this.collisionSystem.update(this.gameObjects, this.deltaTime);
         
@@ -165,6 +176,9 @@ class GameEngine {
     render() {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.width, this.height);
+        
+        // Render background
+        this.backgroundSystem.render(this.ctx, this.camera);
         
         // Render current state
         if (this.currentState) {
