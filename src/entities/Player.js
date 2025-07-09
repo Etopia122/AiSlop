@@ -6,7 +6,7 @@ class Player extends GameObject {
         this.addTag('player');
         
         // Mario-specific properties
-        this.powerState = 'small'; // 'small', 'big', 'fire'
+        this.powerState = 'small'; // 'small', 'big', 'fire', 'ice'
         this.lives = 3;
         this.health = 1;
         this.maxHealth = 1;
@@ -41,6 +41,15 @@ class Player extends GameObject {
         this.fireballCooldown = 0;
         this.maxFireballs = 2;
         this.fireballs = [];
+        
+        // Ice power properties
+        this.iceballCooldown = 0;
+        this.maxIceballs = 2;
+        this.iceballs = [];
+        
+        // Star power properties
+        this.starPower = false;
+        this.starTime = 0;
         
         // Ground detection
         this.groundCheckDistance = 4;
@@ -106,6 +115,25 @@ class Player extends GameObject {
         
         this.addAnimation('fire_crouch', [
             { x: 128, y: 96, width: 32, height: 64 }
+        ], 0.1, false);
+        
+        // Ice Mario animations
+        this.addAnimation('ice_idle', [
+            { x: 0, y: 160, width: 32, height: 64 }
+        ], 0.1, true);
+        
+        this.addAnimation('ice_walk', [
+            { x: 0, y: 160, width: 32, height: 64 },
+            { x: 32, y: 160, width: 32, height: 64 },
+            { x: 64, y: 160, width: 32, height: 64 }
+        ], 0.15, true);
+        
+        this.addAnimation('ice_jump', [
+            { x: 96, y: 160, width: 32, height: 64 }
+        ], 0.1, false);
+        
+        this.addAnimation('ice_crouch', [
+            { x: 128, y: 160, width: 32, height: 64 }
         ], 0.1, false);
         
         // Transformation animations
@@ -185,6 +213,11 @@ class Player extends GameObject {
         if (input.isFireJustPressed() && this.powerState === 'fire') {
             this.shootFireball();
         }
+        
+        // Ice shooting
+        if (input.isFireJustPressed() && this.powerState === 'ice') {
+            this.shootIceball();
+        }
     }
 
     updateTimers(deltaTime) {
@@ -220,6 +253,20 @@ class Player extends GameObject {
         // Fireball cooldown
         if (this.fireballCooldown > 0) {
             this.fireballCooldown -= deltaTime;
+        }
+        
+        // Iceball cooldown
+        if (this.iceballCooldown > 0) {
+            this.iceballCooldown -= deltaTime;
+        }
+        
+        // Star power timer
+        if (this.starTime > 0) {
+            this.starTime -= deltaTime;
+            if (this.starTime <= 0) {
+                this.starPower = false;
+                this.invincible = false;
+            }
         }
     }
 
@@ -261,6 +308,12 @@ class Player extends GameObject {
         this.fireballs = this.fireballs.filter(fireball => {
             fireball.update(deltaTime);
             return fireball.active;
+        });
+        
+        // Update existing iceballs
+        this.iceballs = this.iceballs.filter(iceball => {
+            iceball.update(deltaTime);
+            return iceball.active;
         });
     }
 
@@ -332,6 +385,29 @@ class Player extends GameObject {
             }
         }
     }
+    
+    shootIceball() {
+        if (this.iceballCooldown <= 0 && this.iceballs.length < this.maxIceballs) {
+            const iceball = new Iceball(
+                this.position.x + (this.facingRight ? this.size.x : 0),
+                this.position.y + this.size.y / 2,
+                this.facingRight,
+                this.engine
+            );
+            
+            this.iceballs.push(iceball);
+            if (this.engine) {
+                this.engine.addGameObject(iceball);
+            }
+            
+            this.iceballCooldown = 0.3;
+            
+            // Play iceball sound
+            if (this.engine && this.engine.audio) {
+                this.engine.audio.playIceballSound();
+            }
+        }
+    }
 
     powerUp(powerType) {
         const oldPowerState = this.powerState;
@@ -365,15 +441,28 @@ class Player extends GameObject {
                     this.powerState = 'fire';
                 } 
                 break;
+                
+            case 'ice':
+                if (this.powerState === 'small') {
+                    // First become big, then ice
+                    this.powerUp('big');
+                    setTimeout(() => {
+                        this.powerState = 'ice';
+                        this.updateAppearance();
+                    }, 500);
+                } else {
+                    this.powerState = 'ice';
+                } 
+                break;
         }
         
         if (oldPowerState !== this.powerState) {
             this.updateAppearance();
             this.makeInvincible(1.0);
             
-            // Update mobile fireball button visibility
+            // Update mobile fireball button visibility (show for fire or ice)
             if (this.engine && this.engine.input) {
-                this.engine.input.setFireballButtonVisible(this.powerState === 'fire');
+                this.engine.input.setFireballButtonVisible(this.powerState === 'fire' || this.powerState === 'ice');
             }
         }
     }
@@ -381,12 +470,12 @@ class Player extends GameObject {
     takeDamage(amount = 1) {
         if (this.invincible) return;
         
-        if (this.powerState === 'fire') {
+        if (this.powerState === 'fire' || this.powerState === 'ice') {
             this.powerState = 'big';
             this.updateAppearance();
             this.makeInvincible(2.0);
             
-            // Hide fireball button when losing fire power
+            // Hide fireball button when losing special power
             if (this.engine && this.engine.input) {
                 this.engine.input.setFireballButtonVisible(false);
             }
@@ -412,6 +501,14 @@ class Player extends GameObject {
     makeInvincible(duration) {
         this.invincible = true;
         this.invincibilityTime = duration;
+        this.blinkTimer = 0;
+        this.blinkVisible = true;
+    }
+    
+    makeStarInvincible(duration) {
+        this.invincible = true;
+        this.starPower = true;
+        this.starTime = duration;
         this.blinkTimer = 0;
         this.blinkVisible = true;
     }
@@ -476,11 +573,37 @@ class Player extends GameObject {
 
     render(ctx, camera) {
         // Skip rendering if blinking during invincibility
-        if (this.invincible && !this.blinkVisible) {
+        if (this.invincible && !this.blinkVisible && !this.starPower) {
             return;
         }
         
+        ctx.save();
+        
+        // Apply star power rainbow effect
+        if (this.starPower) {
+            const time = Date.now() * 0.01;
+            const hue = (time * 60) % 360;
+            ctx.filter = `hue-rotate(${hue}deg) brightness(1.3) saturate(1.5)`;
+            
+            // Create star sparkles
+            if (Math.random() < 0.3 && this.engine && this.engine.renderSystem) {
+                this.engine.renderSystem.createParticle({
+                    x: this.position.x + Math.random() * this.size.x,
+                    y: this.position.y + Math.random() * this.size.y,
+                    velocityX: (Math.random() - 0.5) * 50,
+                    velocityY: (Math.random() - 0.5) * 50,
+                    life: 0.5,
+                    size: 3,
+                    color: '#FFD700',
+                    gravity: false,
+                    fadeOut: true
+                });
+            }
+        }
+        
         super.render(ctx, camera);
+        
+        ctx.restore();
     }
 
     getDebugColor() {
@@ -488,6 +611,7 @@ class Player extends GameObject {
             case 'small': return '#FF0000';
             case 'big': return '#00FF00';
             case 'fire': return '#FF6600';
+            case 'ice': return '#87CEEB';
             default: return '#FF0000';
         }
     }

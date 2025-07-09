@@ -111,16 +111,19 @@ class PlayState extends GameState {
     createEnemies() {
         const enemyPositions = [
             { x: 400, y: 450, type: 'goomba' },
-            { x: 600, y: 450, type: 'goomba' },
+            { x: 600, y: 450, type: 'spiny' },
             { x: 800, y: 450, type: 'koopa' },
             { x: 1000, y: 450, type: 'goomba' },
-            { x: 1300, y: 450, type: 'koopa' },
+            { x: 1064, y: 384, type: 'piranha' }, // Piranha in pipe
+            { x: 1300, y: 450, type: 'buzzy' },
             { x: 1600, y: 450, type: 'goomba' },
-            { x: 1800, y: 450, type: 'goomba' },
+            { x: 1764, y: 384, type: 'piranha' }, // Piranha in pipe
+            { x: 1800, y: 350, type: 'boo' },
             { x: 2000, y: 450, type: 'koopa' },
-            { x: 2300, y: 450, type: 'goomba' },
-            { x: 2500, y: 450, type: 'koopa' },
-            { x: 2800, y: 450, type: 'goomba' }
+            { x: 2300, y: 450, type: 'spiny' },
+            { x: 2500, y: 450, type: 'buzzy' },
+            { x: 2800, y: 450, type: 'goomba' },
+            { x: 2964, y: 384, type: 'piranha' }, // Piranha in pipe
         ];
         
         enemyPositions.forEach(pos => {
@@ -129,6 +132,14 @@ class PlayState extends GameState {
                 enemy = new Goomba(pos.x, pos.y, this.engine);
             } else if (pos.type === 'koopa') {
                 enemy = new Koopa(pos.x, pos.y, this.engine);
+            } else if (pos.type === 'piranha') {
+                enemy = new PiranhaPlant(pos.x, pos.y, this.engine);
+            } else if (pos.type === 'buzzy') {
+                enemy = new BuzzyBeetle(pos.x, pos.y, this.engine);
+            } else if (pos.type === 'spiny') {
+                enemy = new Spiny(pos.x, pos.y, this.engine);
+            } else if (pos.type === 'boo') {
+                enemy = new Boo(pos.x, pos.y, this.engine);
             }
             
             if (enemy) {
@@ -512,6 +523,18 @@ class PlayState extends GameState {
             case 'koopa':
                 enemy = new Koopa(x, y, this.engine);
                 break;
+            case 'piranha':
+                enemy = new PiranhaPlant(x, y, this.engine);
+                break;
+            case 'buzzy':
+                enemy = new BuzzyBeetle(x, y, this.engine);
+                break;
+            case 'spiny':
+                enemy = new Spiny(x, y, this.engine);
+                break;
+            case 'boo':
+                enemy = new Boo(x, y, this.engine);
+                break;
             case 'enemy':
                 enemy = new Enemy(x, y, this.engine);
                 break;
@@ -537,6 +560,18 @@ class PlayState extends GameState {
                 break;
             case 'fireflower':
                 powerup = new FireFlower(x, y, this.engine);
+                this.powerups.push(powerup);
+                break;
+            case 'star':
+                powerup = new Star(x, y, this.engine);
+                this.powerups.push(powerup);
+                break;
+            case 'oneup':
+                powerup = new OneUpMushroom(x, y, this.engine);
+                this.powerups.push(powerup);
+                break;
+            case 'iceflower':
+                powerup = new IceFlower(x, y, this.engine);
                 this.powerups.push(powerup);
                 break;
         }
