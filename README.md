@@ -206,6 +206,37 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with modern web technologies
 - Designed for educational and entertainment purposes
 
+## 🎨 Level Editor
+
+The project includes a comprehensive visual level editor that allows you to create custom levels compatible with the game engine!
+
+### Features:
+- **Visual Editor**: Drag-and-drop interface with real-time preview
+- **Complete Toolset**: All tiles, enemies, power-ups, and blocks available
+- **Save/Load System**: Local storage and JSON export/import
+- **Test Integration**: One-click testing in the main game
+- **Layer Management**: Toggle visibility of different object types
+- **Undo/Redo**: Full history system with 50 levels
+- **Minimap**: Overview of entire level layout
+- **Grid System**: Precise placement with multiple grid sizes
+
+### Getting Started with Level Editor:
+1. Open `level-editor.html` in your browser
+2. Use the toolbar to select tiles, enemies, and objects
+3. Click to place objects on the canvas
+4. Use "Test Level" button to play your creation
+5. Export/import levels as JSON files for sharing
+
+### Level Editor Controls:
+- **Mouse**: Click to place, right-click to remove, wheel to zoom
+- **Keyboard**: Arrow keys to pan, Ctrl+Z/Y for undo/redo
+- **Tools**: Eraser, different brush sizes, snap to grid
+- **Layers**: Show/hide tiles, enemies, power-ups, blocks
+
+See `LEVEL_EDITOR_GUIDE.md` for complete documentation.
+
+The level editor is fully integrated with the game engine, supporting all game mechanics including Mario's power states, enemy behaviors, block interactions, and physics.
+
 ## Future Enhancements
 
 - [ ] Sprite sheets and improved graphics
@@ -213,11 +244,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Additional power-ups and enemies
 - [ ] Sound effects and background music
 - [ ] Mobile touch controls
-- [ ] Level editor
+- [x] Level editor ✅
 - [ ] Multiplayer support
 - [ ] Save/load game state
 - [ ] Achievement system
 - [ ] Performance profiling tools
+- [ ] Level editor enhancements (selection tools, custom textures)
 
 ## API Reference
 

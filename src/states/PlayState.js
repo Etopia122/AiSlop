@@ -14,7 +14,21 @@ class PlayState extends GameState {
     }
 
     initialize() {
-        this.createLevel();
+        // Check for custom level data from editor
+        const customLevel = localStorage.getItem('mario_test_level');
+        if (customLevel) {
+            try {
+                const levelData = JSON.parse(customLevel);
+                this.loadCustomLevel(levelData);
+                localStorage.removeItem('mario_test_level'); // Remove after loading
+            } catch (error) {
+                console.error('Failed to load custom level:', error);
+                this.createLevel(); // Fall back to default level
+            }
+        } else {
+            this.createLevel();
+        }
+        
         this.createPlayer();
         this.setupCamera();
     }
@@ -209,7 +223,11 @@ class PlayState extends GameState {
     }
 
     createPlayer() {
-        this.player = new Player(100, 400, this.engine);
+        // Use custom start position if set by level editor
+        const startX = this.playerStartX || 100;
+        const startY = this.playerStartY || 400;
+        
+        this.player = new Player(startX, startY, this.engine);
         this.engine.addGameObject(this.player);
     }
 
@@ -373,9 +391,208 @@ class PlayState extends GameState {
         this.setupCamera();
     }
 
+    loadCustomLevel(levelData) {
+        console.log('Loading custom level:', levelData.name);
+        
+        // Clear existing objects
+        this.tiles = [];
+        this.enemies = [];
+        this.powerups = [];
+        this.coins = [];
+        this.blocks = [];
+        
+        // Set level dimensions
+        this.levelWidth = levelData.width || 3200;
+        this.levelHeight = levelData.height || 480;
+        
+        // Load tiles
+        if (levelData.tiles) {
+            levelData.tiles.forEach(tileData => {
+                const tile = new GameObject(tileData.x, tileData.y, tileData.width || 32, tileData.height || 32);
+                
+                // Set tile properties based on type
+                this.configureTile(tile, tileData.type);
+                
+                this.tiles.push(tile);
+                this.engine.addGameObject(tile);
+            });
+        }
+        
+        // Load entities
+        if (levelData.entities) {
+            levelData.entities.forEach(entityData => {
+                this.createEntity(entityData);
+            });
+        }
+        
+        // Ensure there's at least some ground
+        if (this.tiles.length === 0) {
+            this.createMinimalGround();
+        }
+    }
+    
+    configureTile(tile, type) {
+        tile.addTag('static');
+        tile.solid = true;
+        tile.mass = 1000;
+        
+        switch (type) {
+            case 'ground':
+                tile.addTag('ground');
+                tile.getDebugColor = () => '#8B4513';
+                break;
+            case 'brick':
+                tile.addTag('brick');
+                tile.getDebugColor = () => '#CD853F';
+                break;
+            case 'stone':
+                tile.addTag('stone');
+                tile.getDebugColor = () => '#696969';
+                break;
+            case 'ice':
+                tile.addTag('ice');
+                tile.getDebugColor = () => '#B0E0E6';
+                tile.friction = 0.1; // Slippery ice
+                break;
+            case 'lava':
+                tile.addTag('lava');
+                tile.addTag('damage');
+                tile.getDebugColor = () => '#FF4500';
+                break;
+            case 'water':
+                tile.addTag('water');
+                tile.getDebugColor = () => '#1E90FF';
+                tile.solid = false; // Water is not solid
+                break;
+            case 'cloud':
+                tile.addTag('cloud');
+                tile.addTag('platform');
+                tile.getDebugColor = () => '#F0F8FF';
+                break;
+            case 'platform':
+                tile.addTag('platform');
+                tile.getDebugColor = () => '#228B22';
+                break;
+            default:
+                tile.addTag('ground');
+                tile.getDebugColor = () => '#8B4513';
+        }
+    }
+    
+    createEntity(entityData) {
+        const x = entityData.x;
+        const y = entityData.y;
+        
+        switch (entityData.category) {
+            case 'enemies':
+                this.createCustomEnemy(x, y, entityData.type);
+                break;
+            case 'powerups':
+                this.createCustomPowerup(x, y, entityData.type);
+                break;
+            case 'blocks':
+                this.createCustomBlock(x, y, entityData.type);
+                break;
+            case 'tools':
+                if (entityData.type === 'player_start') {
+                    this.playerStartX = x;
+                    this.playerStartY = y;
+                }
+                break;
+        }
+    }
+    
+    createCustomEnemy(x, y, type) {
+        let enemy;
+        
+        switch (type) {
+            case 'goomba':
+                enemy = new Goomba(x, y, this.engine);
+                break;
+            case 'koopa':
+                enemy = new Koopa(x, y, this.engine);
+                break;
+            case 'enemy':
+                enemy = new Enemy(x, y, this.engine);
+                break;
+        }
+        
+        if (enemy) {
+            this.enemies.push(enemy);
+            this.engine.addGameObject(enemy);
+        }
+    }
+    
+    createCustomPowerup(x, y, type) {
+        let powerup;
+        
+        switch (type) {
+            case 'coin':
+                powerup = new Coin(x, y, this.engine);
+                this.coins.push(powerup);
+                break;
+            case 'mushroom':
+                powerup = new Mushroom(x, y, this.engine);
+                this.powerups.push(powerup);
+                break;
+            case 'fireflower':
+                powerup = new FireFlower(x, y, this.engine);
+                this.powerups.push(powerup);
+                break;
+        }
+        
+        if (powerup) {
+            this.engine.addGameObject(powerup);
+        }
+    }
+    
+    createCustomBlock(x, y, type) {
+        let block;
+        
+        switch (type) {
+            case 'question':
+                block = new Block(x, y, 'question', this.engine);
+                break;
+            case 'brick_block':
+                block = new Block(x, y, 'brick', this.engine);
+                break;
+            case 'invisible':
+                block = new Block(x, y, 'invisible', this.engine);
+                break;
+            case 'pipe':
+                block = new GameObject(x, y, 64, 68);
+                block.addTag('pipe');
+                block.addTag('static');
+                block.solid = true;
+                block.mass = 1000;
+                block.getDebugColor = () => '#00AA00';
+                this.engine.addGameObject(block);
+                return; // Don't add to blocks array for pipes
+        }
+        
+        if (block) {
+            this.blocks.push(block);
+            this.engine.addGameObject(block);
+        }
+    }
+    
+    createMinimalGround() {
+        // Create a minimal ground platform if no tiles exist
+        const tileSize = 32;
+        for (let x = 0; x < 10; x++) {
+            const tile = new GameObject(x * tileSize, 500, tileSize, tileSize);
+            tile.addTag('ground');
+            tile.addTag('static');
+            tile.solid = true;
+            tile.mass = 1000;
+            tile.getDebugColor = () => '#8B4513';
+            this.tiles.push(tile);
+            this.engine.addGameObject(tile);
+        }
+    }
+
     loadLevel(levelData) {
-        // Load level from data
-        // This would be implemented for level editor support
-        console.log('Loading level:', levelData);
+        // Legacy method - redirect to loadCustomLevel
+        this.loadCustomLevel(levelData);
     }
 }
