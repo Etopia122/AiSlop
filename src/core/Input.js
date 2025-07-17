@@ -11,7 +11,6 @@ class Input {
             'ArrowRight': 'right',
             'ArrowUp': 'up',
             'ArrowDown': 'down',
-            ' ': 'jump',
             'Space': 'jump',
             'KeyR': 'restart',
             'KeyZ': 'run',
@@ -26,8 +25,12 @@ class Input {
     }
 
     setupEventListeners() {
+        const gameKeys = [
+            'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'Space', 'KeyZ', 'KeyX', 'KeyC', 'Enter', 'Escape'
+        ];
         document.addEventListener('keydown', (e) => {
-            e.preventDefault();
+            if (gameKeys.includes(e.code)) e.preventDefault();
             const key = this.keyMap[e.code] || e.code;
             
             if (!this.keys[key]) {
@@ -38,18 +41,11 @@ class Input {
         });
 
         document.addEventListener('keyup', (e) => {
-            e.preventDefault();
+            if (gameKeys.includes(e.code)) e.preventDefault();
             const key = this.keyMap[e.code] || e.code;
             
             this.keys[key] = false;
             this.keysUp[key] = true;
-        });
-        
-        // Prevent arrow keys from scrolling the page
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-                e.preventDefault();
-            }
         });
     }
 
