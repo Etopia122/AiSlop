@@ -13,8 +13,7 @@ class Input {
             'ArrowDown': 'down',
             'Space': 'jump',
             'KeyR': 'restart',
-            'KeyZ': 'run',
-            'KeyX': 'fire',
+            'KeyZ': 'run_fire',
             'KeyC': 'crouch',
             'Enter': 'start',
             'Escape': 'pause'
@@ -103,15 +102,15 @@ class Input {
     }
 
     isRunPressed() {
-        return this.isPressed('run') || this.isPressed('KeyZ');
+        return this.isPressed('run_fire') || this.isPressed('KeyZ');
     }
 
     isFirePressed() {
-        return this.isPressed('fire') || this.isPressed('KeyX');
+        return this.isPressed('run_fire') || this.isPressed('KeyZ');
     }
 
     isFireJustPressed() {
-        return this.wasPressed('fire') || this.wasPressed('KeyX');
+        return this.wasPressed('run_fire') || this.wasPressed('KeyZ');
     }
 
     isCrouchPressed() {
@@ -148,11 +147,11 @@ class Input {
     }
 
     isRunning() {
-        return this.touchInput ? this.touchInput.isRunning() : this.isPressed('KeyZ');
+        return this.touchInput ? this.touchInput.isRunning() : this.isPressed('KeyZ') || this.isPressed('run_fire');
     }
 
     isShootingFireball() {
-        return this.touchInput ? this.touchInput.isShootingFireball() : this.isPressed('KeyX');
+        return this.touchInput ? this.touchInput.isShootingFireball() : this.isPressed('KeyZ') || this.isPressed('run_fire');
     }
 
     setFireballButtonVisible(visible) {
